@@ -1,5 +1,30 @@
 const express = require("express");
 const app = express();
+
+const mongoose = require("mongoose");
+
+const Post = require("./schemas/post");
+
+// const connection =
+//   "mongodb+srv://cschneider:4lzcVb1aLhlDmbaR@cluster0.bev39.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+// mongoose.connect(connection, { useNewUrlParser: true });
+// const db = mongoose.connection;
+// db.on("error", () => console.error("connection error:"));
+// db.once("open", () => {
+//   console.log("connected");
+// });
+
+mongoose
+  .connect(
+    "mongodb+srv://cschneider:4lzcVb1aLhlDmbaR@cluster0.bev39.mongodb.net/mean-course?retryWrites=true&w=majority"
+  )
+  .then(() => {
+    console.log("Connected to database!");
+  })
+  .catch(() => {
+    console.log("Connection failed!");
+  });
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -17,7 +42,11 @@ app.use((req, res, next) => {
 });
 
 app.post("/api/posts", (req, res, next) => {
-  const post = req.body;
+  const post = new Post({
+    title: req.body.title,
+    content: req.body.content,
+  });
+  post.save();
   console.log(post);
   res.status(201).json({
     message: "Post added successfully!",
@@ -25,23 +54,11 @@ app.post("/api/posts", (req, res, next) => {
 });
 
 app.get("/api/posts", (req, res, next) => {
-  const posts = [
-    {
-      id: "fakdjfkadjf",
-      title: "First server-side post",
-      content:
-        "Praesent laoreet diam eget est pellentesque, et pellentesque ex tristique. Cras et ullamcorper metus, a tempus nunc",
-    },
-    {
-      id: "jsadkjflkjlkjljkj",
-      title: "Second server-side post",
-      content:
-        "Praesent laoreet diam eget est pellentesque, et pellentesque ex tristique. Cras et ullamcorper metus, a tempus nunc",
-    },
-  ];
-  res.status(200).json({
-    message: "Posts fetched successfully!",
-    posts: posts,
+  Post.find().then((documents) => {
+    res.status(200).json({
+      message: "Posts fetched successfully!",
+      posts: documents,
+    });
   });
 });
 
