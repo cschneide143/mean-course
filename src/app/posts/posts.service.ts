@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 
 import { Post } from './post.model';
 import { Router } from '@angular/router';
+import { title } from 'process';
 
 @Injectable({ providedIn: 'root' })
 export class PostsService {
@@ -44,16 +45,23 @@ export class PostsService {
     );
   }
 
-  addPost(ptitle: string, pcontent: string) {
-    const post: Post = { id: null, title: ptitle, content: pcontent };
+  addPost(ptitle: string, pcontent: string, pimage: File) {
+    //const post: Post = { id: null, title: ptitle, content: pcontent };
+    const postData = new FormData();
+    postData.append('title', ptitle);
+    postData.append('content', pcontent);
+    postData.append('image', pimage, ptitle);
     this.http
       .post<{ message: string; postId: string }>(
         'http://localhost:3000/api/posts',
-        post
+        postData
       )
       .subscribe((responseData) => {
-        const id = responseData.postId;
-        post.id = id;
+        const post: Post = {
+          id: responseData.postId,
+          title: ptitle,
+          content: pcontent,
+        };
         this.posts.push(post);
         this.postsUpdated.next([...this.posts]);
         this.router.navigate(['/']);
